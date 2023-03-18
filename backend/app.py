@@ -25,22 +25,34 @@ def get_stock_data():
     date_range = request.args.get('date_range')
 
     # Set interval based on the date_range
-    interval = '1m'
+    interval = '5m'
     if date_range == 'Day':
-        interval = '1m'
+        interval = '5m'
+        start_date, end_date = get_start_end_dates(date_range)
+        data = yf.download(stock, start=start_date, end=end_date, interval=interval)
+        print(data)
+        data.reset_index(inplace=True)
+        data['Date'] = data['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        print(data)
     elif date_range == 'Week':
-        interval = '15m'
+        interval = '30m'
+        start_date, end_date = get_start_end_dates(date_range)
+        data = yf.download(stock, start=start_date, end=end_date, interval=interval)
+        print(data)
+        data.reset_index(inplace=True)
+        data['Date'] = data['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        print(data)
     elif date_range == 'Month':
         interval = '1d'
-
-    start_date, end_date = get_start_end_dates(date_range)
-    data = yf.download(stock, start=start_date, end=end_date, interval=interval)
-    print(data)
-    data.reset_index(inplace=True)
-    data['Date'] = data['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
-    print(data)
+        start_date, end_date = get_start_end_dates(date_range)
+        data = yf.download(stock, start=start_date, end=end_date, interval=interval)
+        print(data)
+        data.reset_index(inplace=True)
+        data['Date'] = data['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        print(data)
 
     return jsonify(data.to_dict(orient='records'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

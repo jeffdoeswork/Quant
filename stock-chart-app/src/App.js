@@ -1,15 +1,8 @@
+// App.js
 import React, { useState } from 'react';
-import { Line } from 'react-chartjs-2';
+import { Candlestick } from 'react-chartjs-2';
 import axios from 'axios';
-import { Chart, LinearScale, CategoryScale, PointElement, LineController, LineElement } from 'chart.js';
-
-Chart.register(LinearScale);
-Chart.register(CategoryScale);
-Chart.register(PointElement);
-Chart.register(LineController);
-Chart.register(LineElement);
-
-
+import Chart from 'react-apexcharts';
 
 function App() {
   const [stock, setStock] = useState('');
@@ -45,21 +38,26 @@ function App() {
       console.log(data);
   
       if (Array.isArray(data)) {
+        const ohlcData = data.map((entry) => ({
+          t: entry.Date,
+          o: entry.Open,
+          h: entry.High,
+          l: entry.Low,
+          c: entry.Close,
+        }));
+
         const dates = data.map((entry) => entry.Date);
-        const closingPrices = data.map((entry) => entry.Close);
-  
+        const closingPrices = data.map((entry) => [entry.Open, entry.High, entry.Low, entry.Close]);
+        
         setChartData({
           labels: dates,
           datasets: [
             {
-              label: 'Closing Price',
               data: closingPrices,
-              borderColor: 'rgba(75,192,192,1)',
-              backgroundColor: 'rgba(0,0,0,0)',
-              borderWidth: 2,
             },
           ],
         });
+
       } else {
         console.error('Error fetching data: Data is not an array');
       }
@@ -67,6 +65,35 @@ function App() {
       console.error('Error fetching data:', error);
     }
   };
+
+  const chartOptions = {
+    chart: {
+      type: 'candlestick',
+    },
+    title: {
+      text: `${stock} Price`,
+    },
+    xaxis: {
+      type: 'datetime',
+      categories: chartData.labels,
+    },
+    yaxis: {
+      tooltip: {
+        enabled: true,
+      },
+    },
+  };
+
+  const series = [
+    {
+      data: chartData.datasets[0].data.map((price, index) => {
+        return {
+          x: chartData.labels[index],
+          y: price,
+        };
+      }),
+    },
+  ];
 
   return (
     <div className="App">
@@ -99,7 +126,7 @@ function App() {
         <button type="submit">Fetch Data</button>
       </form>
       <div>
-      <Line data={chartData} key={Math.random()} />
+        <Chart options={chartOptions} series={series} type="candlestick" />
       </div>
     </div>
   );
