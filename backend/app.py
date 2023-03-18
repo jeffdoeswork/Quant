@@ -2,9 +2,11 @@ from flask_cors import CORS
 from flask import Flask, jsonify, request
 import yfinance as yf
 from datetime import datetime, timedelta
+import pandas as pd
 
 app = Flask(__name__)
 CORS(app, origins="http://127.0.0.1:3000", allow_headers=["Content-Type"])
+
 
 def get_start_end_dates(date_range):
     end_date = datetime.now()
@@ -40,7 +42,10 @@ def get_stock_data():
         data = yf.download(stock, start=start_date, end=end_date, interval=interval)
         print(data)
         data.reset_index(inplace=True)
+        data = data[data['Datetime'].dt.weekday < 5]
         data['Date'] = data['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        
+
         print(data)
     elif date_range == 'Month':
         interval = '1d'
@@ -48,7 +53,10 @@ def get_stock_data():
         data = yf.download(stock, start=start_date, end=end_date, interval=interval)
         print(data)
         data.reset_index(inplace=True)
+        data = data[data['Date'].dt.weekday < 5]
+
         data['Date'] = data['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+
         print(data)
 
     return jsonify(data.to_dict(orient='records'))
