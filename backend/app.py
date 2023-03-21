@@ -21,11 +21,11 @@ def get_start_end_dates(date_range):
 
     return start_date, end_date
 
-@app.route('/api/stock', methods=['GET'])
+@app.route('/api', methods=['GET'])
 def get_stock_data():
     stock = request.args.get('stock')
     date_range = request.args.get('date_range')
-
+    print("Stock: ", stock, " Date: ", date_range)
     # Set interval based on the date_range
     interval = '5m'
     if date_range == 'Day':
