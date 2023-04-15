@@ -1,31 +1,33 @@
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import './App.css';
-import StockChart from './StockChart';
 import NewChart from './NewChart';
-
+import CustomBarChart from './CustomBarChart';
 
 const App = () => {
-  const data = [
-    {
-      date: '2021-03-01',
-      open: 100,
-      high: 110,
-      low: 95,
-      close: 105,
-    },
-    {
-      date: '2021-03-02',
-      open: 105,
-      high: 115,
-      low: 100,
-      close: 110,
-    },
-    // more data...
-  ];
+  const [data, setData] = useState([]);
+
+  const fetchStockData = async (stock, dateRange) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/api?stock=${stock}&date_range=${dateRange}`);
+      const jsonData = await response.json();
+      setData(jsonData);
+      console.log(jsonData);
+    } catch (error) {
+      console.error("Error fetching stock data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchStockData("AAPL", "Week"); // Replace "AAPL" and "Week" with the desired stock and date range.
+  }, []);
 
   return (
     <div className="App">
       <NewChart data={data} />
+
+      <br></br>
+
+      <CustomBarChart data={data} />
     </div>
   );
 };
