@@ -1,35 +1,47 @@
 import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import './App.css';
 import NewChart from './NewChart';
 import CustomBarChart from './CustomBarChart';
 
 const App = () => {
   const [data, setData] = useState([]);
+  const { register, handleSubmit } = useForm();
 
-  const fetchStockData = async (stock, dateRange) => {
+  const onSubmit = (data) => {
+    fetchStockData(data.stock, data.date);
+  };
+
+  const fetchStockData = async (stock, date) => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api?stock=${stock}&date_range=${dateRange}`);
+      const response = await fetch(`http://127.0.0.1:5000/api?stock=${stock}&date=${date}`);
       const jsonData = await response.json();
       setData(jsonData);
-      console.log(jsonData);
     } catch (error) {
       console.error("Error fetching stock data:", error);
     }
   };
+  
 
   useEffect(() => {
-    fetchStockData("AAPL", "Week"); // Replace "AAPL" and "Week" with the desired stock and date range.
   }, []);
 
   return (
     <div className="App">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <label htmlFor="stock">Stock Ticker:</label>
+        <input type="text" id="stock" {...register('stock')} required />
+
+        <label htmlFor="date">Date:</label>
+        <input type="date" id="date" {...register('date')} required />
+
+        <button type="submit">Fetch Data</button>
+      </form>
+
       <NewChart data={data} />
-
       <br></br>
-
       <CustomBarChart data={data} />
     </div>
   );
 };
-
 export default App;

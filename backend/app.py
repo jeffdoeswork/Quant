@@ -23,34 +23,24 @@ def convert_data_format(data):
     return new_data
 
 
-def get_start_end_dates(date_range):
-    end_date = datetime.now()
-    if date_range == 'Day':
-        start_date = end_date - timedelta(days=1)
-    elif date_range == 'Week':
-        start_date = end_date - timedelta(weeks=1)
-    elif date_range == 'Month':
-        start_date = end_date - timedelta(days=30)
-    else:
-        raise ValueError("Invalid date_range value")
-
+def get_start_end_dates(date):
+    start_date = datetime.strptime(date, "%Y-%m-%d")
+    end_date = start_date + timedelta(days=1)
     return start_date, end_date
+
 
 @app.route('/api', methods=['GET'])
 def get_stock_data():
     stock = request.args.get('stock')
-    date_range = request.args.get('date_range')
-    print("Stock: ", stock, " Date: ", date_range)
-    # Set interval based on the date_range
+    date = request.args.get('date')
+    print("Stock: ", stock, " Date: ", date)
     interval = '5m'
-    start_date, end_date = get_start_end_dates(date_range)
+    start_date, end_date = get_start_end_dates(date)
     data = yf.download(stock, start=start_date, end=end_date, interval=interval)
     print(data)
     data.reset_index(inplace=True)
     data['Date'] = data['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
     formatted_data = convert_data_format(data)
-    print(data)
-
     return jsonify(formatted_data)
 
 
