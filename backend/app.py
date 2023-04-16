@@ -7,20 +7,57 @@ import pandas as pd
 app = Flask(__name__)
 CORS(app, origins="http://127.0.0.1:3000", allow_headers=["Content-Type"])
 
-def convert_data_format(data):
-    new_data = []
+def process_stock_data(data):
+    data['sell_indicator'] = 0
+    data['buy_indicator'] = 0
+
+    running_buy = 0
+    running_sell = 0
+    in_a_buy = False
+    in_a_sell = False
     for index, row in data.iterrows():
-        new_data.append({
+        if index == 0:
+            continue
+
+        net = row['Close'] - row['Open']
+
+        if (net > 0) and (net > running_buy) and not in_a_buy:
+            data.at[index, 'buy_indicator'] = 1
+            in_a_buy = True
+            in_a_sell = False
+            running_sell = 0
+            
+        if (net < 0) and (net < running_sell) and not in_a_sell:
+            data.at[index, 'sell_indicator'] = 1
+            in_a_sell = True
+            in_a_buy = False
+            running_buy = 0
+            
+
+        if net > 0:
+            running_buy = net
+        if net < 0:
+            running_sell = net
+
+
+            
+    return data
+
+
+def convert_data_format(data):
+    output = []
+    for _, row in data.iterrows():
+        output.append({
             'date': row['Date'],
             'open': row['Open'],
             'high': row['High'],
             'low': row['Low'],
             'close': row['Close'],
-            'green': row['Close'] > row['Open'],
-            'red': row['Close'] < row['Open'],
+            'buy_indicator': row['buy_indicator'],
+            'sell_indicator': row['sell_indicator']
         })
+    return output
 
-    return new_data
 
 
 def get_start_end_dates(date):
@@ -37,6 +74,7 @@ def get_stock_data():
     interval = '5m'
     start_date, end_date = get_start_end_dates(date)
     data = yf.download(stock, start=start_date, end=end_date, interval=interval)
+    data = process_stock_data(data)
     print(data)
     data.reset_index(inplace=True)
     data['Date'] = data['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')

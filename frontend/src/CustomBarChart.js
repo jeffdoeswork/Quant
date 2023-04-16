@@ -50,6 +50,7 @@ const CustomBarChart = ({ data }) => {
     yaxis: { title: 'Price' },
     xaxis: { type: 'category' },
     showlegend: true,
+    width: 1200,
   };
 
   return <Plot data={plotData} layout={layout} />;

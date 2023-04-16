@@ -7,32 +7,34 @@ const NewChart = ({ data }) => {
         const plotData = [
           {
             x: data.map(d => d.date),
+            y: data.map(d => (d.buy_indicator || d.sell_indicator) ? d.close : null),
+            mode: 'markers',
+            marker: {
+              size: 10,
+              color: data.map(d => {
+                if (d.buy_indicator) return 'green';
+                if (d.sell_indicator) return 'red';
+                return null;
+              }),
+            },
+            type: 'scatter',
+            hoverinfo: 'none',
+          },
+          // OHLC data
+          {
+            x: data.map(d => d.date),
             close: data.map(d => d.close),
             high: data.map(d => d.high),
             low: data.map(d => d.low),
             open: data.map(d => d.open),
-      
+        
             decreasing: { line: { color: 'grey' } },
             increasing: { line: { color: 'grey' } },
             line: { color: 'rgba(31,119,180,1)' },
             type: 'ohlc',
           },
-          {
-            x: data.map(d => d.date),
-            y: data.map(d => (d.green || d.red) ? d.close : null),
-            mode: 'markers',
-            marker: {
-              size: 10, // Increase the size of the markers
-              color: data.map(d => {
-                if (d.green) return 'green';
-                if (d.red) return 'red';
-                return null;
-              }),
-            },
-            type: 'scatter',
-          },
         ];
-      
+        
         const layout = {
           title: 'OHLC Chart with Custom Indicators',
           yaxis: {
@@ -42,6 +44,7 @@ const NewChart = ({ data }) => {
             rangeslider: { visible: false },
           },
           showlegend: false,
+          width: 1200,
         };
       
         return <Plot data={plotData} layout={layout} />;
