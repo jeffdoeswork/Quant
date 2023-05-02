@@ -9,12 +9,12 @@ const App = () => {
   const { register, handleSubmit } = useForm();
 
   const onSubmit = (data) => {
-    fetchStockData(data.stock, data.date);
+    fetchStockData(data.stock);
   };
 
-  const fetchStockData = async (stock, date) => {
+  const fetchStockData = async (stock) => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api?stock=${stock}&date=${date}`);
+      const response = await fetch(`http://127.0.0.1:5000/api?stock=${stock}`);
       const jsonData = await response.json();
       setData(jsonData);
     } catch (error) {
@@ -31,9 +31,6 @@ const App = () => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <label htmlFor="stock">Stock Ticker:</label>
         <input type="text" id="stock" {...register('stock')} required />
-
-        <label htmlFor="date">Date:</label>
-        <input type="date" id="date" {...register('date')} required />
 
         <button type="submit">Fetch Data</button>
       </form>
