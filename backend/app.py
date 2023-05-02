@@ -7,28 +7,61 @@ import pandas as pd
 app = Flask(__name__)
 CORS(app, origins="http://localhost:3000", allow_headers=["Content-Type"])
 
-def process_stock_data(data):
+def process_stock_data(data, length):
     data['sell_indicator'] = 0
     data['buy_indicator'] = 0
     data['net'] = data['Close'] - data['Open']
     data['netabs'] = data['net'].abs()
 
-    data['Line1'] = data['netabs'].rolling(window=5).mean()
-    data['Line1'].iloc[0] = data['netabs'].iloc[0]
-    data['Line1'].iloc[1] = (data['netabs'].iloc[0] + data['netabs'].iloc[1]) / 2
-    data['Line1'].iloc[2] = (data['netabs'].iloc[0] + data['netabs'].iloc[1] + data['netabs'].iloc[2]) / 3
-    data['Line1'].iloc[3] = (data['netabs'].iloc[0] + data['netabs'].iloc[1] + data['netabs'].iloc[2] + data['netabs'].iloc[3]) / 4
+    if length == "week":
+
+        data['Line1'] = data['netabs'].rolling(window=5).mean()
+        data['Line1'].iloc[0] = data['netabs'].iloc[0]
+        data['Line1'].iloc[1] = (data['netabs'].iloc[0] + data['netabs'].iloc[1]) / 2
+        data['Line1'].iloc[2] = (data['netabs'].iloc[0] + data['netabs'].iloc[1] + data['netabs'].iloc[2]) / 3
+        data['Line1'].iloc[3] = (data['netabs'].iloc[0] + data['netabs'].iloc[1] + data['netabs'].iloc[2] + data['netabs'].iloc[3]) / 4
 
 
-    data['Line2'] = data['Line1'] * -1
+        data['Line2'] = data['Line1'] * -1
 
-    data['Gas'] = data['net'].rolling(window=5).mean()
-    data['Gas'].iloc[0] = data['net'].iloc[0]
-    data['Gas'].iloc[1] = (data['net'].iloc[0] + data['net'].iloc[1]) / 2
-    data['Gas'].iloc[2] = (data['net'].iloc[0] + data['net'].iloc[1] + data['net'].iloc[2]) / 3
-    data['Gas'].iloc[3] = (data['net'].iloc[0] + data['net'].iloc[1] + data['net'].iloc[2] + data['net'].iloc[3]) / 4
+        data['Gas'] = data['net'].rolling(window=5).mean()
+        data['Gas'].iloc[0] = 0
+        data['Gas'].iloc[1] = (data['net'].iloc[0] + data['net'].iloc[1]) / 2
+        data['Gas'].iloc[2] = (data['net'].iloc[0] + data['net'].iloc[1] + data['net'].iloc[2]) / 3
+        data['Gas'].iloc[3] = (data['net'].iloc[0] + data['net'].iloc[1] + data['net'].iloc[2] + data['net'].iloc[3]) / 4
 
-    data['Gas'] = data['Gas'] * 2
+        data['GasNew'] = data['Gas'] * 2
+
+        data['TopManifold'] = data['Line1'].rolling(window=3).mean()
+        data['TopManifold'].iloc[0] = data['Line1'].iloc[0]
+        data['TopManifold'].iloc[1] = (data['Line1'].iloc[0] + data['Line1'].iloc[1]) / 2
+        data['TopManifold'].iloc[2] = (data['Line1'].iloc[0] + data['Line1'].iloc[1] + data['Line1'].iloc[2]) / 3
+        data['TopManifold'].iloc[3] = (data['Line1'].iloc[0] + data['Line1'].iloc[1] + data['Line1'].iloc[2] + data['Line1'].iloc[3]) / 4
+        data['TopManifold'] = data['TopManifold'] * 0.2
+
+        data['BottomManifold'] = data['TopManifold'] * -1
+
+    else:
+        
+        data['Line1'] = data['netabs'].rolling(window=3).mean()
+        data['Line1'].iloc[0] = data['netabs'].iloc[0]
+        data['Line1'].iloc[1] = (data['netabs'].iloc[0] + data['netabs'].iloc[1]) / 2
+
+        data['Line2'] = data['Line1'] * -1
+
+        data['Gas'] = data['net'].rolling(window=3).mean()
+        data['Gas'].iloc[0] = 0
+        data['Gas'].iloc[1] = (data['net'].iloc[0] + data['net'].iloc[1]) / 2
+
+        data['GasNew'] = data['Gas'] * 2
+
+        data['TopManifold'] = data['Line1'].rolling(window=3).mean()
+        data['TopManifold'].iloc[0] = data['Line1'].iloc[0]
+        data['TopManifold'].iloc[1] = (data['Line1'].iloc[0] + data['Line1'].iloc[1]) / 2
+        data['TopManifold'] = data['TopManifold'] * 0.5
+
+        data['BottomManifold'] = data['TopManifold'] * -1
+
 
     data['Avg_Close'] = data['Close'].rolling(window=3).mean()
     data['Avg_Open'] = data['Open'].rolling(window=3).mean()
@@ -56,9 +89,11 @@ def convert_data_format(data):
             'low': row['Low'],
             'close': row['Close'],
             'net': row['net'],
-            'Line1': row['Line1'], 
-            'Line2': row['Line2'],
+            'TopManifold': row['TopManifold'], 
+            'BottomManifold': row['BottomManifold'],
             'Gas': row['Gas'],
+            'GasNew': row['GasNew'],
+            'Volume': row['Volume'],
             'buy_indicator': row['buy_indicator'],
             'sell_indicator': row['sell_indicator']
         })
@@ -78,7 +113,7 @@ def get_stock_data():
     start_date, end_date = get_start_end_dates()
     data = yf.download(stock, start=start_date, end=end_date, interval=interval)
     data = data.reset_index()
-    data = process_stock_data(data)
+    data = process_stock_data(data, "day")
     print(data)
     data.reset_index(inplace=True)
     data['Date'] = data['Date'].dt.strftime('%Y-%m-%d')
@@ -94,7 +129,7 @@ def get_stock_data_week():
     start_date, end_date = get_start_end_dates()
     data = yf.download(stock, start=start_date, end=end_date, interval=interval)
     data = data.reset_index()
-    data = process_stock_data(data)
+    data = process_stock_data(data, "week")
     print(data)
     data.reset_index(inplace=True)
     data['Date'] = data['Date'].dt.strftime('%Y-%m-%d')

@@ -6,15 +6,16 @@ const WeekChart = ({ data }) => {
   const plotData = [
     {
       x: data.map((d) => d.date),
-      y: data.map((d) => d.close - d.open),
+      y: data.map((d) => d.GasNew),
       type: 'bar',
       marker: {
-        color: data.map((d) => (d.close - d.open > 0 ? 'green' : 'red')),
+        // color: data.map((d) => (d.close - d.open > 0 ? 'green' : 'red')),
+         color: 'gray',
       },
     },
     {
       x: data.map((d) => d.date),
-      y: data.map((d) => d.Line1),
+      y: data.map((d) => d.TopManifold),
       type: 'scatter',
       mode: 'lines',
       line: { color: 'orange' },
@@ -22,10 +23,10 @@ const WeekChart = ({ data }) => {
     },
     {
       x: data.map((d) => d.date),
-      y: data.map((d) => d.Line2),
+      y: data.map((d) => d.BottomManifold),
       type: 'scatter',
       mode: 'lines',
-      line: { color: 'purple' },
+      line: { color: 'orange' },
       name: 'Bottom Flow',
     },
     {
@@ -33,7 +34,7 @@ const WeekChart = ({ data }) => {
       y: data.map((d) => d.Gas),
       type: 'scatter',
       mode: 'lines',
-      line: { color: 'blue' },
+      line: { color: 'green' },
       name: 'Gas',
     },
     // Add more lines as needed
