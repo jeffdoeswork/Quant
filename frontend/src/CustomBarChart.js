@@ -2,29 +2,7 @@ import React from 'react';
 import Plot from 'react-plotly.js';
 
 const CustomBarChart = ({ data }) => {
-
-    const calculateShapes = (data) => {
-        const shapes = data.map((d) => d.close - d.open);
       
-        const shapeAve = shapes.slice(0, 5).reduce((a, b) => a + b, 0) / 5;
-        const shapeAve3 = shapes.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
-      
-        const shapeMagnAve =
-          shapes.slice(0, 5).map(Math.abs).reduce((a, b) => a + b, 0) / 5;
-      
-        const shapeAve31 = shapes.reduce((a, b) => a + b, 0) / shapes.length;
-      
-        return {
-          shapeAve,
-          shapeAve3,
-          shapeMagnAve,
-          shapeAve31,
-        };
-      };
-      
-      
-  const { shapeAve, shapeAve3, shapeMagnAve, shapeAve31 } = calculateShapes(data);
-
   const plotData = [
     {
       x: data.map((d) => d.date),
@@ -36,11 +14,19 @@ const CustomBarChart = ({ data }) => {
     },
     {
       x: data.map((d) => d.date),
-      y: Array(data.length).fill(shapeAve),
+      y: data.map((d) => d.Line1),
       type: 'scatter',
       mode: 'lines',
-      line: { color: 'blue' },
-      name: 'shapeAve',
+      line: { color: 'orange' },
+      name: 'Line1',
+    },
+    {
+      x: data.map((d) => d.date),
+      y: data.map((d) => d.Line2),
+      type: 'scatter',
+      mode: 'lines',
+      line: { color: 'purple' },
+      name: 'Line2',
     },
     // Add more lines as needed
   ];
