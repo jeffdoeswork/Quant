@@ -18,7 +18,7 @@ const CustomBarChart = ({ data }) => {
       type: 'scatter',
       mode: 'lines',
       line: { color: 'orange' },
-      name: 'Line1',
+      name: 'Top Flow',
     },
     {
       x: data.map((d) => d.date),
@@ -26,13 +26,21 @@ const CustomBarChart = ({ data }) => {
       type: 'scatter',
       mode: 'lines',
       line: { color: 'purple' },
-      name: 'Line2',
+      name: 'Bottom Flow',
+    },
+    {
+      x: data.map((d) => d.date),
+      y: data.map((d) => d.Gas),
+      type: 'scatter',
+      mode: 'lines',
+      line: { color: 'blue' },
+      name: 'Gas',
     },
     // Add more lines as needed
   ];
 
   const layout = {
-    title: 'Custom Bar Chart with Lines',
+    // title: 'Custom Bar Chart with Lines',
     yaxis: { title: 'Price' },
     xaxis: { type: 'category' },
     showlegend: true,

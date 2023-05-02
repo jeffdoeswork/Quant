@@ -5,18 +5,40 @@ import { useForm } from 'react-hook-form';
 const NewChart = ({ data }) => {
 
         const plotData = [
+          // {
+          //   x: data.map(d => d.date),
+          //   y: data.map(d => (d.buy_indicator || d.sell_indicator) ? d.close : null),
+          //   mode: 'markers',
+          //   marker: {
+          //     size: 10,
+          //     color: data.map(d => {
+          //       if (d.buy_indicator) return 'green';
+          //       if (d.sell_indicator) return 'red';
+          //       return null;
+          //     }),
+          //   },
+          //   type: 'scatter',
+          //   hoverinfo: 'none',
+          // },
           {
             x: data.map(d => d.date),
-            y: data.map(d => (d.buy_indicator || d.sell_indicator) ? d.close : null),
+            y: data.map(d => (d.buy_indicator) ? d.high : null),
             mode: 'markers',
             marker: {
               size: 10,
-              color: data.map(d => {
-                if (d.buy_indicator) return 'green';
-                if (d.sell_indicator) return 'red';
-                return null;
-              }),
-            },
+              color: 'green',
+              },
+            type: 'scatter',
+            hoverinfo: 'none',
+          },
+          {
+            x: data.map(d => d.date),
+            y: data.map(d => (d.sell_indicator) ? d.low : null),
+            mode: 'markers',
+            marker: {
+              size: 10,
+              color: 'red',
+              },
             type: 'scatter',
             hoverinfo: 'none',
           },
@@ -33,10 +55,27 @@ const NewChart = ({ data }) => {
             line: { color: 'rgba(31,119,180,1)' },
             type: 'ohlc',
           },
+
+          // {
+          //   x: data.map((d) => d.date),
+          //   y: data.map((d) => d.buy_indicator),
+          //   type: 'scatter',
+          //   mode: 'markers',
+          //   marker: {
+          //     size: 10,
+          //     color: data.map(d => {
+          //       if (d.buy_indicator) return 'green';
+          //       if (d.sell_indicator) return 'red';
+          //       return null;
+          //     }),
+          //   },
+          //   name: 'Red Dot',
+          // },
+
         ];
         
         const layout = {
-          title: 'OHLC Chart with Custom Indicators',
+          // title: 'OHLC Chart with Custom Indicators',
           yaxis: {
             title: 'Price',
           },
