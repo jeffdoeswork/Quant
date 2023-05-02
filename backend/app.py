@@ -1,11 +1,32 @@
 from flask_cors import CORS
 from flask import Flask, jsonify, request
-import yfinance as yf
+import yfinance as yf  # use IEX Cloud one day
 from datetime import datetime, timedelta
 import pandas as pd
 
 app = Flask(__name__)
 CORS(app, origins="http://localhost:3000", allow_headers=["Content-Type"])
+def get_current_day_ohlc(symbol):
+    # Fetch intraday data for the stock with a 5-minute interval
+    data = yf.download(tickers=symbol, interval='5m', period='1d')
+    print("hey look at me download data: ", data)
+    # Calculate Open, High, Low, and Close for the current day
+    open_price = data.iloc[0]['Open']
+    high_price = data['High'].max()
+    low_price = data['Low'].min()
+    close_price = data.iloc[-1]['Close']
+    end_date = datetime.now()
+
+
+    # Create a DataFrame with the consolidated OHLC data
+    ohlc_data = pd.DataFrame({'Open': [open_price],
+                              'High': [high_price],
+                              'Low': [low_price],
+                              'Close': [close_price],},
+                             index=[data.index[0].date()])
+    ohlc_data['Date'] = end_date
+
+    return(ohlc_data)
 
 def process_stock_data(data, length):
     data['sell_indicator'] = 0
@@ -74,7 +95,8 @@ def process_stock_data(data, length):
 
     data.drop('condition1', axis=1, inplace=True)
     data.drop('condition2', axis=1, inplace=True)
-
+    data.drop('Adj Close', axis=1, inplace=True)
+    data.drop('Volume', axis=1, inplace=True)
     # for index, row in data.iterrows():
     return data
 
@@ -83,7 +105,7 @@ def convert_data_format(data):
     output = []
     for _, row in data.iterrows():
         output.append({
-            'date': row['Date'],
+            'date': row['index'],
             'open': row['Open'],
             'high': row['High'],
             'low': row['Low'],
@@ -93,7 +115,6 @@ def convert_data_format(data):
             'BottomManifold': row['BottomManifold'],
             'Gas': row['Gas'],
             'GasNew': row['GasNew'],
-            'Volume': row['Volume'],
             'buy_indicator': row['buy_indicator'],
             'sell_indicator': row['sell_indicator']
         })
@@ -112,6 +133,9 @@ def get_stock_data():
     interval = '1d'
     start_date, end_date = get_start_end_dates()
     data = yf.download(stock, start=start_date, end=end_date, interval=interval)
+    current_day_ohlc = get_current_day_ohlc(stock)
+    print("current day: ", current_day_ohlc)
+    data = data.append(current_day_ohlc)
     data = data.reset_index()
     data = process_stock_data(data, "day")
     print(data)
@@ -128,6 +152,11 @@ def get_stock_data_week():
     interval = '1wk' # changed to weekly interval
     start_date, end_date = get_start_end_dates()
     data = yf.download(stock, start=start_date, end=end_date, interval=interval)
+    current_day_ohlc = get_current_day_ohlc(stock)
+    print("current day: ", current_day_ohlc)
+
+    data = data.append(current_day_ohlc)
+
     data = data.reset_index()
     data = process_stock_data(data, "week")
     print(data)
