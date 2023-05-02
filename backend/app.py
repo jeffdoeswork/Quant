@@ -30,41 +30,19 @@ def process_stock_data(data):
 
     data['Gas'] = data['Gas'] * 2
 
-    running_buy = False
-    running_sell = False
-    in_a_buy = False
-    in_a_sell = False
-    for index, row in data.iterrows():
-        net = row['Close'] - row['Open']
+    data['Avg_Close'] = data['Close'].rolling(window=3).mean()
+    data['Avg_Open'] = data['Open'].rolling(window=3).mean()
 
-        if not running_buy and net > 0:
-            running_buy = net
+    data['condition1'] = data['Avg_Close'] > data['Avg_Open']
+    data['condition2'] = data['Avg_Close'] < data['Avg_Open']
 
-        if not running_sell and net < 0:
-            running_sell = net
+    data['buy_indicator'] = data['condition1'].apply(lambda x: 1 if x else 0)
+    data['sell_indicator'] = data['condition2'].apply(lambda x: 1 if x else 0)
 
-        if index == 0:
-            continue
-        
+    data.drop('condition1', axis=1, inplace=True)
+    data.drop('condition2', axis=1, inplace=True)
 
-        if (net > running_buy) and not in_a_buy:
-            data.at[index, 'buy_indicator'] = 1
-            in_a_buy = True
-            in_a_sell = False
-            running_buy = False
-
-        if (net < running_sell) and not in_a_sell:
-            data.at[index, 'sell_indicator'] = 1
-            in_a_sell = True
-            in_a_buy = False
-            running_sell = False
-
-        if net > 0 and net > running_buy :
-            running_buy = net
-
-        if net < 0 and net < running_sell:
-            running_sell = net
-
+    # for index, row in data.iterrows():
     return data
 
 
